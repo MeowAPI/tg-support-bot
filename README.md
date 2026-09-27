@@ -99,20 +99,19 @@ git tag v0.1.0 && git push origin v0.1.0
 
 带 `-` 的标签（如 `v0.2.0-rc1`）会标记为预发布。
 
-**服务器部署：** 只需要 `docker-compose.yml` 和 `.env` 两个文件，不需要源码。仓库是私有的，镜像也是私有的，服务器需要先登录一次 GHCR：
+**服务器部署：** 只需要 `docker-compose.yml` 和 `.env` 两个文件，不需要源码：
 
-1. 在 GitHub → Settings → Developer settings → Personal access tokens (classic) 创建一个只勾选 `read:packages` 的 token。
-2. 在服务器上登录（用户名填你的 GitHub 用户名，密码填这个 token）：
+```bash
+mkdir tg-support-bot && cd tg-support-bot
+curl -fsSLO https://raw.githubusercontent.com/MeowAPI/tg-support-bot/main/docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/MeowAPI/tg-support-bot/main/.env.example -o .env
+# 编辑 .env 填入 BOT_TOKEN、ADMIN_IDS
+docker compose pull && docker compose up -d
+```
 
-   ```bash
-   docker login ghcr.io -u <GitHub用户名>
-   ```
+以后升级也是 `docker compose pull && docker compose up -d`。
 
-3. 启动或升级：
-
-   ```bash
-   docker compose pull && docker compose up -d
-   ```
+如果 `docker compose pull` 报 `unauthorized`，说明镜像包是私有的：要么在 GitHub 包设置里把 `tg-support-bot` 改为 Public，要么在服务器上先 `docker login ghcr.io -u <GitHub用户名>`（密码用只勾选 `read:packages` 的 Personal access token）。
 
 默认跟随 `latest`（即 main 分支最新构建）。生产环境建议在 `.env` 里写 `TAG=0.1.0` 固定版本，升级时改版本号再执行上面的命令。启动日志第一行会打印当前运行的版本号。
 
