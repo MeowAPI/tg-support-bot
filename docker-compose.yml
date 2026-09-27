@@ -1,0 +1,9 @@
+services:
+  tg-support-bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./data:/data

@@ -1,0 +1,4 @@
+/data/
+.env
+*.exe
+/tg-support-bot
