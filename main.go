@@ -21,6 +21,9 @@ import (
 	"github.com/MeowAPI/tg-support-bot/internal/telegram"
 )
 
+// version is set at build time with -ldflags "-X main.version=...".
+var version = "dev"
+
 type config struct {
 	token   string
 	apiBase string
@@ -44,6 +47,7 @@ func main() {
 		level = slog.LevelDebug
 	}
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
+	logger.Info("starting tg-support-bot", "version", version)
 
 	st, err := store.Open(cfg.dbPath)
 	if err != nil {

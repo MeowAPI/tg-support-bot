@@ -14,10 +14,10 @@
 1. 找 [@BotFather](https://t.me/BotFather) 发送 `/newbot` 创建机器人，拿到 token。
 2. 复制配置：`cp .env.example .env`，填入 `BOT_TOKEN`。
    不知道自己的用户 ID：先让 `ADMIN_IDS` 留空启动一次，私聊机器人发送 `/id`，再填进 `ADMIN_IDS` 重启。
-3. 启动：
+3. 启动（镜像由 GitHub Actions 自动构建，服务器不需要编译，详见下方[部署与发版](#部署与发版)）：
 
    ```bash
-   docker compose up -d --build
+   docker compose pull && docker compose up -d
    ```
 
    或者本地直接跑（会自动读取当前目录的 `.env`）：
@@ -80,6 +80,43 @@
 | `LOG_LEVEL` | `info` | 设为 `debug` 输出更多日志 |
 | `TELEGRAM_API_BASE` | `https://api.telegram.org` | 可指向自建的 Bot API Server |
 | `HTTPS_PROXY` | 空 | 服务器访问不了 Telegram 时使用代理 |
+
+## 部署与发版
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) 会自动跑测试并构建镜像（linux/amd64 + linux/arm64），推送到 GHCR：
+
+| 触发 | 镜像标签 | 其他产物 |
+| --- | --- | --- |
+| 推送到 `main` | `latest`、`sha-<短哈希>` | — |
+| 推送 `v*` 标签（如 `v0.1.0`） | `0.1.0`、`0.1` | GitHub Release（自动生成更新说明 + 各平台二进制 + SHA256SUMS） |
+| Pull Request | 只跑测试 | — |
+
+**发一个正式版本：**
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+带 `-` 的标签（如 `v0.2.0-rc1`）会标记为预发布。
+
+**服务器部署：** 只需要 `docker-compose.yml` 和 `.env` 两个文件，不需要源码。仓库是私有的，镜像也是私有的，服务器需要先登录一次 GHCR：
+
+1. 在 GitHub → Settings → Developer settings → Personal access tokens (classic) 创建一个只勾选 `read:packages` 的 token。
+2. 在服务器上登录（用户名填你的 GitHub 用户名，密码填这个 token）：
+
+   ```bash
+   docker login ghcr.io -u <GitHub用户名>
+   ```
+
+3. 启动或升级：
+
+   ```bash
+   docker compose pull && docker compose up -d
+   ```
+
+默认跟随 `latest`（即 main 分支最新构建）。生产环境建议在 `.env` 里写 `TAG=0.1.0` 固定版本，升级时改版本号再执行上面的命令。启动日志第一行会打印当前运行的版本号。
+
+想在本地自己构建镜像：`docker build -t tg-support-bot .`
 
 ## 注意事项
 

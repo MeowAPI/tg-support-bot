@@ -1,6 +1,8 @@
 services:
   tg-support-bot:
-    build: .
+    # Built and published by .github/workflows/release.yml. Set TAG in .env
+    # (e.g. TAG=0.1.0) to pin a release instead of following main.
+    image: ghcr.io/meowapi/tg-support-bot:${TAG:-latest}
     restart: unless-stopped
     env_file: .env
     environment:
